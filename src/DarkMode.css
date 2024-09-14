@@ -1,0 +1,86 @@
+body {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+  }
+  
+  .converter-container {
+    background-color: #2a2a2a;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  .converter-header {
+    color: #ffffff;
+  }
+  
+  .converter-section {
+    background-color: #333333;
+    border-color: #4a4a4a;
+  }
+  
+  .converter-section-header {
+    background-color: #4a4a4a;
+    color: #ffffff;
+  }
+  
+  .converter-section-header:hover {
+    background-color: #5a5a5a;
+  }
+  
+  .converter-section-content {
+    background-color: #333333;
+  }
+  
+  .converter-label {
+    color: #b0b0b0;
+  }
+  
+  .converter-input, .converter-select, .converter-textarea {
+    background-color: #444444;
+    border-color: #555555;
+    color: #e0e0e0;
+  }
+  
+  .converter-input::placeholder, .converter-textarea::placeholder {
+    color: #888888;
+  }
+  
+  .converter-preview {
+    background-color: #3a3a3a;
+  }
+  
+  .converter-preview-item {
+    color: #d0d0d0;
+  }
+  
+  .converter-button {
+    background-color: #4CAF50;
+  }
+  
+  .converter-button:hover {
+    background-color: #45a049;
+  }
+  
+  .converter-button.download {
+    background-color: #2196F3;
+  }
+  
+  .converter-button.download:hover {
+    background-color: #1e87db;
+  }
+  
+  .converter-progress-bar {
+    background-color: #444444;
+  }
+  
+  .converter-progress-fill {
+    background-color: #4CAF50;
+  }
+  
+  .converter-input-type button {
+    background-color: #555555;
+  }
+  
+  .converter-input-type button:hover,
+  .converter-input-type button.active {
+    background-color: #666666;
+  }
