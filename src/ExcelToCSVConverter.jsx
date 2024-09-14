@@ -1,6 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import './ExcelToCSVConverter.css';
+import './DarkMode.css';
+import InputSection from './InputSection';
+import OptionsSection from './OptionsSection';
+import OutputSection from './OutputSection';
 
 const ExcelToCSVConverter = () => {
   const [input, setInput] = useState('');
@@ -14,6 +18,9 @@ const ExcelToCSVConverter = () => {
   const [columnPreview, setColumnPreview] = useState([]);
   const [expandedSection, setExpandedSection] = useState('input');
   const [inputType, setInputType] = useState('excel');
+  const [delimiter, setDelimiter] = useState(',');
+  const [removeDuplicates, setRemoveDuplicates] = useState(false);
+  const [substringSelection, setSubstringSelection] = useState({ start: 0, end: undefined });
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -77,26 +84,34 @@ const ExcelToCSVConverter = () => {
     } else {
       processLines(lines);
     }
-  }, [input, quoteType, uploadedFile, selectedColumn]);
+  }, [input, quoteType, uploadedFile, selectedColumn, substringSelection, delimiter, removeDuplicates]);
 
   const processLines = (lines) => {
     const totalLines = lines.length;
     let csv = '';
 
+    // Apply substring if specified
+    lines = lines.map(line => line.substring(substringSelection.start, substringSelection.end));
+
+    // Remove duplicates if option is selected
+    if (removeDuplicates) {
+      lines = [...new Set(lines)];
+    }
+
     const processChunk = (start) => {
-      const end = Math.min(start + 1000, totalLines);
+      const end = Math.min(start + 1000, lines.length);
       const chunk = lines.slice(start, end);
 
       if (quoteType === 'none') {
-        csv += chunk.join(',') + (end < totalLines ? ',' : '');
+        csv += chunk.join(delimiter) + (end < lines.length ? delimiter : '');
       } else {
         const quote = quoteType === 'single' ? "'" : '"';
-        csv += chunk.map(line => `${quote}${line}${quote}`).join(',') + (end < totalLines ? ',' : '');
+        csv += chunk.map(line => `${quote}${line}${quote}`).join(delimiter) + (end < lines.length ? delimiter : '');
       }
 
       setProgress(Math.round((end / totalLines) * 100));
 
-      if (end < totalLines) {
+      if (end < lines.length) {
         setTimeout(() => processChunk(end), 0);
       } else {
         setOutput(csv);
@@ -152,61 +167,17 @@ const ExcelToCSVConverter = () => {
             Input
             <span>{expandedSection === 'input' ? '▲' : '▼'}</span>
           </button>
-          <div className={`converter-section-content ${expandedSection === 'input' ? '' : 'hidden'}`}>
-            {inputType === 'excel' ? (
-              <>
-                <div>
-                  <label className="converter-label" htmlFor="file-upload">Import Excel File:</label>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    accept=".xlsx, .xls"
-                    onChange={handleFileUpload}
-                    className="converter-input"
-                  />
-                  {fileName && <p className="converter-file-name">File: {fileName}</p>}
-                </div>
-
-                {columns.length > 0 && (
-                  <div>
-                    <label className="converter-label" htmlFor="column-select">Select Column:</label>
-                    <select
-                      id="column-select"
-                      value={selectedColumn}
-                      onChange={(e) => setSelectedColumn(e.target.value)}
-                      className="converter-select"
-                    >
-                      {columns.map((col, index) => (
-                        <option key={index} value={col}>{col}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {columnPreview.length > 0 && (
-                  <div className="converter-preview">
-                    <label className="converter-label">Column Preview (First 5 rows):</label>
-                    <ul>
-                      {columnPreview.map((value, index) => (
-                        <li key={index} className="converter-preview-item">{value}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div>
-                <label className="converter-label" htmlFor="input">Paste Excel Column Values:</label>
-                <textarea
-                  id="input"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  className="converter-textarea"
-                  placeholder="Paste your data here..."
-                />
-              </div>
-            )}
-          </div>
+          <InputSection
+            inputType={inputType}
+            handleFileUpload={handleFileUpload}
+            fileName={fileName}
+            columns={columns}
+            selectedColumn={selectedColumn}
+            setSelectedColumn={setSelectedColumn}
+            columnPreview={columnPreview}
+            input={input}
+            setInput={setInput}
+          />
         </div>
 
         <div className={`converter-section ${expandedSection === 'options' ? 'expanded' : ''}`}>
@@ -217,32 +188,17 @@ const ExcelToCSVConverter = () => {
             Options
             <span>{expandedSection === 'options' ? '▲' : '▼'}</span>
           </button>
-          <div className={`converter-section-content ${expandedSection === 'options' ? '' : 'hidden'}`}>
-            <div>
-              <label className="converter-label">Quote Type:</label>
-              <div className="converter-radio-group">
-                {[
-                  { value: 'none', label: 'Plain' },
-                  { value: 'single', label: "Single quote (')" },
-                  { value: 'double', label: 'Double quote (")' }
-                ].map((type) => (
-                  <div key={type.value} className="converter-radio-item">
-                    <input
-                      type="radio"
-                      id={`r-${type.value}`}
-                      checked={quoteType === type.value}
-                      onChange={() => setQuoteType(type.value)}
-                    />
-                    <label htmlFor={`r-${type.value}`}>{type.label}</label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button onClick={convertToCSV} className="converter-button">
-              Convert
-            </button>
-          </div>
+          <OptionsSection
+            quoteType={quoteType}
+            setQuoteType={setQuoteType}
+            delimiter={delimiter}
+            setDelimiter={setDelimiter}
+            removeDuplicates={removeDuplicates}
+            setRemoveDuplicates={setRemoveDuplicates}
+            convertToCSV={convertToCSV}
+            previewText={columnPreview[0] || input.split('\n')[0] || ''}
+            setSubstringSelection={setSubstringSelection}
+          />
         </div>
 
         <div className={`converter-section ${expandedSection === 'output' ? 'expanded' : ''}`}>
@@ -253,34 +209,11 @@ const ExcelToCSVConverter = () => {
             Output
             <span>{expandedSection === 'output' ? '▲' : '▼'}</span>
           </button>
-          <div className={`converter-section-content ${expandedSection === 'output' ? '' : 'hidden'}`}>
-            {progress > 0 && progress < 100 && (
-              <div className="converter-progress-container">
-                <div className="converter-progress-bar">
-                  <div className="converter-progress-fill" style={{ width: `${progress}%` }}></div>
-                </div>
-                <p className="converter-progress-text">{progress}% Complete</p>
-              </div>
-            )}
-
-            {output && (
-              <div>
-                <label className="converter-label" htmlFor="output">Output:</label>
-                <textarea
-                  id="output"
-                  value={output}
-                  readOnly
-                  className="converter-textarea"
-                />
-              </div>
-            )}
-
-            {output && (
-              <button onClick={downloadCSV} className="converter-button download">
-                Download CSV
-              </button>
-            )}
-          </div>
+          <OutputSection
+            progress={progress}
+            output={output}
+            downloadCSV={downloadCSV}
+          />
         </div>
       </div>
     </div>

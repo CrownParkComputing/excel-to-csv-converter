@@ -113,7 +113,6 @@ body {
   flex-direction: column;
   gap: 10px;
   margin-bottom: 15px;
-  background-color: #1fa1b5;
 }
 
 .converter-radio-item {
@@ -202,4 +201,24 @@ body {
   font-size: 14px;
   color: #7f8c8d;
   margin-bottom: 10px;
+}
+
+.converter-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.converter-input-group .converter-input {
+  flex: 1;
+}
+
+.converter-checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.converter-checkbox-group input[type="checkbox"] {
+  margin-right: 10px;
 }
